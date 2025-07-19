@@ -23,7 +23,6 @@ The file structure is as follows:
 │  select_sample.py         epoch=10，extratc id and save to .txt
 │  tree.txt
 │  vector_match.py          semantic match
-│  记录.txt
 │  
 ```
 
