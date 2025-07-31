@@ -2,7 +2,7 @@
 
 Code dependencies are located `requirments.txt`
 
-The file structure is as follows:
+The file structure is shown in `tree.txt`, detailed information is as follows:
 
 ```
 │  abla_topN.py             Top-N candidate fusion graph generating
@@ -18,12 +18,48 @@ The file structure is as follows:
 │  knowledge_extractor.py   3D semantics extraction
 │  match-all.py             RAVEN core entry
 │  metric_count.py          
-│  prompt.py                
+│  prompt.py     
+│  Readme.md           
 │  requirements.txt
 │  select_sample.py         epoch=10，extratc id and save to .txt
 │  tree.txt
 │  vector_match.py          semantic match
 │  
+├─cpg_export                export results and intermediate files of CPGs
+│  ├─neg_cpg                intermediate .c and .bin files for negative samples    
+│  ├─neg_xml                .graml files of CPGs for negative samples
+│  ├─pos_cpg          
+│  └─pos_xml
+│              
+├─multimodel_base           extracted multimodel knowledge base
+│      embed_metadata.json
+│      functions.index              
+│      neg_code.json
+│      neg_extraction.json
+│      neg_graph_embeddings.json
+│      pos_code.json
+│      pos_extraction.json
+│      pos_graph_embeddings.json
+│      purpose.index
+│      vulncause.index
+│      
+└─outputs
+    │  ablation_topn_line_chart.html
+    │  es_results.json
+    │  neg_graph_only.json
+    │  neg_result.json
+    │  neg_vec_only.json
+    │  pos_graph_only.json
+    │  pos_results.json
+    │  pos_vec_only.json
+    │  
+    └─abla-topN
+            query05_results.json
+            query10_results.json
+            query15_results.json
+            query20_results.json
+            query25_results.json
+            query30_results.json
 ```
 
 

@@ -5,7 +5,7 @@ EMBEDDING_DIM = 384
 FAISS_INDEX_PATH = "vector_index/faiss_index.bin"
 RAW_DATA_PATH = "dataset"
 
-RESULT_SAVE_PATH = "output"
+RESULT_SAVE_PATH = "multimodal_base"
 # VECTOR_DB_SAVE_PATH = "vector_db"
 
 DEFAULT_SYS_PROMPT = "You are an expert in vulnerability analysis.\n"   # "You are a helpful assistant."

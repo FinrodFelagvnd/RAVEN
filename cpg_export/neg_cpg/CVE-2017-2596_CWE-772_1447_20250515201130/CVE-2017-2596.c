@@ -1,0 +1,81 @@
+static int nested_vmx_check_vmptr(struct kvm_vcpu *vcpu, int exit_reason,
+				  gpa_t *vmpointer)
+{
+	gva_t gva;
+	gpa_t vmptr;
+	struct x86_exception e;
+	struct page *page;
+	struct vcpu_vmx *vmx = to_vmx(vcpu);
+	int maxphyaddr = cpuid_maxphyaddr(vcpu);
+
+	if (get_vmx_mem_address(vcpu, vmcs_readl(EXIT_QUALIFICATION),
+			vmcs_read32(VMX_INSTRUCTION_INFO), false, &gva))
+		return 1;
+
+	if (kvm_read_guest_virt(&vcpu->arch.emulate_ctxt, gva, &vmptr,
+				sizeof(vmptr), &e)) {
+		kvm_inject_page_fault(vcpu, &e);
+		return 1;
+	}
+
+	switch (exit_reason) {
+	case EXIT_REASON_VMON:
+		/*
+		 * SDM 3: 24.11.5
+		 * The first 4 bytes of VMXON region contain the supported
+		 * VMCS revision identifier
+		 *
+		 * Note - IA32_VMX_BASIC[48] will never be 1
+		 * for the nested case;
+		 * which replaces physical address width with 32
+		 *
+		 */
+		if (!PAGE_ALIGNED(vmptr) || (vmptr >> maxphyaddr)) {
+			nested_vmx_failInvalid(vcpu);
+			return kvm_skip_emulated_instruction(vcpu);
+		}
+
+		page = nested_get_page(vcpu, vmptr);
+		if (page == NULL ||
+		    *(u32 *)kmap(page) != VMCS12_REVISION) {
+			nested_vmx_failInvalid(vcpu);
+			kunmap(page);
+			return kvm_skip_emulated_instruction(vcpu);
+		}
+		kunmap(page);
+		vmx->nested.vmxon_ptr = vmptr;
+		break;
+	case EXIT_REASON_VMCLEAR:
+		if (!PAGE_ALIGNED(vmptr) || (vmptr >> maxphyaddr)) {
+			nested_vmx_failValid(vcpu,
+					     VMXERR_VMCLEAR_INVALID_ADDRESS);
+			return kvm_skip_emulated_instruction(vcpu);
+		}
+
+		if (vmptr == vmx->nested.vmxon_ptr) {
+			nested_vmx_failValid(vcpu,
+					     VMXERR_VMCLEAR_VMXON_POINTER);
+			return kvm_skip_emulated_instruction(vcpu);
+		}
+		break;
+	case EXIT_REASON_VMPTRLD:
+		if (!PAGE_ALIGNED(vmptr) || (vmptr >> maxphyaddr)) {
+			nested_vmx_failValid(vcpu,
+					     VMXERR_VMPTRLD_INVALID_ADDRESS);
+			return kvm_skip_emulated_instruction(vcpu);
+		}
+
+		if (vmptr == vmx->nested.vmxon_ptr) {
+			nested_vmx_failValid(vcpu,
+					     VMXERR_VMPTRLD_VMXON_POINTER);
+			return kvm_skip_emulated_instruction(vcpu);
+		}
+		break;
+	default:
+		return 1; /* shouldn't happen */
+	}
+
+	if (vmpointer)
+		*vmpointer = vmptr;
+	return 0;
+}

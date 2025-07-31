@@ -292,15 +292,15 @@ def batch_match(top_l = 80, top_m = 200, top_n = 5, alpha=0.6, w_purpose=0.6, w_
             cwe_id = parts[1]
             project_id = parts[2]
             # 0.2 search information of target_item, attach code,cpg
-            target_item = query_target_item(os.path.join(RESULT_SAVE_PATH, "merged_extraction.json"), cve_id, cwe_id, project_id) 
-            # target_item = query_target_clean_item(os.path.join(RESULT_SAVE_PATH, "clean_all3800_extraction.json"), cve_id, cwe_id, project_id) 
+            target_item = query_target_item(os.path.join(RESULT_SAVE_PATH, "pos_extraction.json"), cve_id, cwe_id, project_id) 
+            # target_item = query_target_clean_item(os.path.join(RESULT_SAVE_PATH, "neg_extraction.json"), cve_id, cwe_id, project_id) 
             if target_item is None:
                 print(f"Matched item unfound, skipping UID: {uid}")
                 skipped_uids.append(uid)
                 continue  
 
-            target_item["code"] = query_code(cve_id, cwe_id, project_id, os.path.join(RAW_DATA_PATH, "PairVul/full-dataset/Linux_kernel_clean_data_top5_CWEs.json")) 
-            # target_item["code"] = query_clean_code(cve_id, cwe_id, project_id, os.path.join(RESULT_SAVE_PATH, "clean_data.json")) 
+            target_item["code"] = query_code(cve_id, cwe_id, project_id, os.path.join(RESULT_SAVE_PATH, "pos_code.json")) 
+            # target_item["code"] = query_clean_code(cve_id, cwe_id, project_id, os.path.join(RESULT_SAVE_PATH, "neg_code.json")) 
             target_item["cpg"] = query_embeddings(os.path.join(RESULT_SAVE_PATH, "graph_embeddings.json"), cve_id, cwe_id, project_id)  
 
             if target_item:
@@ -329,7 +329,7 @@ def batch_match(top_l = 80, top_m = 200, top_n = 5, alpha=0.6, w_purpose=0.6, w_
 
                 vulnerable_flag = False 
                 for rank, candidate in enumerate(fused_top_n, start=1):
-                    candidate["code"] = query_code(candidate["cve_id"], candidate["cwe_id"], candidate["project_id"], os.path.join(RAW_DATA_PATH, "PairVul/full-dataset/Linux_kernel_clean_data_top5_CWEs.json"))
+                    candidate["code"] = query_code(candidate["cve_id"], candidate["cwe_id"], candidate["project_id"], os.path.join(RESULT_SAVE_PATH, "pos_code.json"))
                     candidate["rank"] = rank
                     # print(f"Candidate: {candidate}")
                     # print(json.dumps(candidate, indent=2, ensure_ascii=False, default=convert_numpy))
@@ -359,7 +359,7 @@ def batch_match(top_l = 80, top_m = 200, top_n = 5, alpha=0.6, w_purpose=0.6, w_
 
                 target_item["result"] = llm_answer
                 # target_item["predicted_cwe"] = predicted_cwe
-                output_path = os.path.join(RESULT_SAVE_PATH, "query05_results.json")
+                output_path = os.path.join(RESULT_SAVE_PATH, "query_results.json")
                 append_json_list(output_path, target_item, default=convert_numpy)
 
             else:
